@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-900 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PsicoHosp ENADE Lab - Simulado Interativo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        accent: {
+                            400: '#38bdf8',
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Custom Styles & Animation */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* 3D Flip Card */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+
+        /* Smooth scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="font-sans min-h-screen flex flex-col justify-between bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950 text-slate-100 antialiased selection:bg-sky-500 selection:text-white">
+
+    <!-- TOP NAVIGATION & HUD -->
+    <header class="sticky top-0 z-50 glass-card border-b border-slate-800/80 px-4 py-3">
+        <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            
+            <!-- Logo & Title -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-xl shadow-lg shadow-sky-500/20">
+                    🏥
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight text-white flex items-center gap-2">
+                        PsicoHosp <span class="bg-sky-500/20 text-sky-400 text-xs px-2 py-0.5 rounded-full border border-sky-500/30">ENADE 2026</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Preparatório de Psicologia Hospitalar</p>
+                </div>
+            </div>
+
+            <!-- Stats HUD -->
+            <div class="flex items-center gap-3 bg-slate-800/60 border border-slate-700/50 rounded-xl px-3 py-1.5 text-xs">
+                <div class="flex items-center gap-1.5" title="Seu nível">
+                    <span class="text-amber-400">⭐</span>
+                    <span id="user-level" class="font-semibold text-slate-200">Nível 1</span>
+                </div>
+                <div class="h-4 w-px bg-slate-700"></div>
+                <div class="flex items-center gap-1.5" title="XP Acumulado">
+                    <span class="text-sky-400">⚡</span>
+                    <span id="user-xp" class="font-semibold text-slate-200">0 XP</span>
+                </div>
+                <div class="h-4 w-px bg-slate-700"></div>
+                <div class="flex items-center gap-1.5" title="Sequência de acertos">
+                    <span class="text-rose-500">🔥</span>
+                    <span id="streak-count" class="font-semibold text-slate-200">0x</span>
+                </div>
+            </div>
+
+            <!-- Mode Switcher Tabs -->
+            <div class="flex items-center bg-slate-800/80 p-1 rounded-xl border border-slate-700/60 text-xs font-medium">
+                <button id="btn-quiz" onclick="switchTab('quiz')" class="px-3 py-1.5 rounded-lg transition-all duration-200 bg-sky-600 text-white shadow-sm">
+                    📝 Simulado (30Q)
+                </button>
+                <button id="btn-flashcards" onclick="switchTab('flashcards')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-200">
+                    🎴 Flashcards
+                </button>
+                <button id="btn-guide" onclick="switchTab('guide')" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-200">
+                    📖 Guia Teórico
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-5xl mx-auto px-4 py-6 flex-1 w-full flex flex-col justify-center">
+
+        <!-- ==================== TAB 1: QUIZ / SIMULADO ==================== -->
+        <section id="tab-quiz" class="space-y-6">
+            
+            <!-- Quiz Header & Progress -->
+            <div class="glass-card p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex-1">
+                    <div class="flex justify-between items-center mb-1 text-xs text-slate-400 font-medium">
+                        <span id="question-number-text">Questão 1 de 30</span>
+                        <span id="question-category-tag" class="text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20">História e Modelos</span>
+                    </div>
+                    <!-- Progress Bar -->
+                    <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+                        <div id="quiz-progress-bar" class="h-full bg-gradient-to-r from-sky-500 to-indigo-500 w-[3.33%] transition-all duration-300"></div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 self-end md:self-auto">
+                    <button onclick="resetQuiz()" class="text-xs text-slate-400 hover:text-slate-200 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 px-3 py-2 rounded-xl transition">
+                        🔄 Reiniciar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div id="question-card" class="glass-card p-6 md:p-8 rounded-2xl space-y-6 shadow-xl relative overflow-hidden transition-all">
+                
+                <!-- Question Statement -->
+                <div class="space-y-3">
+                    <span class="text-xs font-semibold tracking-wider uppercase text-slate-400 block">Situação-Problema (Estilo ENADE)</span>
+                    <p id="question-statement" class="text-base md:text-lg text-slate-100 leading-relaxed font-normal">
+                        <!-- Statement loaded dynamically -->
+                    </p>
+                </div>
+
+                <!-- Options List -->
+                <div id="options-container" class="space-y-3 pt-2">
+                    <!-- Options loaded dynamically -->
+                </div>
+
+                <!-- Justification / Feedback Box (Hidden initially) -->
+                <div id="feedback-box" class="hidden p-5 rounded-xl border space-y-2 animate-fadeIn">
+                    <div class="flex items-center gap-2 font-bold text-sm" id="feedback-title">
+                        <!-- Dynamic correct/incorrect header -->
+                    </div>
+                    <p id="feedback-text" class="text-sm text-slate-300 leading-relaxed">
+                        <!-- Dynamic rationale -->
+                    </p>
+                </div>
+
+                <!-- Bottom Navigation Buttons -->
+                <div class="flex justify-between items-center pt-4 border-t border-slate-800">
+                    <button id="btn-prev" onclick="prevQuestion()" disabled class="px-4 py-2 rounded-xl text-xs font-medium bg-slate-800/50 text-slate-500 border border-slate-700/50 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-700 hover:text-white transition">
+                        ⬅️ Anterior
+                    </button>
+                    
+                    <button id="btn-next" onclick="nextQuestion()" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white shadow-lg shadow-sky-600/30 transition flex items-center gap-2">
+                        <span id="btn-next-label">Próxima</span> ➡️
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 2: FLASHCARDS ==================== -->
+        <section id="tab-flashcards" class="hidden space-y-6">
+            <div class="text-center space-y-2">
+                <h2 class="text-2xl font-bold text-white">Revisão Rápida por Flashcards 🎴</h2>
+                <p class="text-xs text-slate-400">Clique no cartão para girar e ver o conceito correto e a justificativa técnica.</p>
+            </div>
+
+            <!-- Flashcard Container -->
+            <div class="max-w-2xl mx-auto perspective-1000 my-8">
+                <div id="flashcard-inner" onclick="flipFlashcard()" class="relative w-full min-h-[320px] glass-card rounded-3xl p-8 cursor-pointer transition-transform duration-500 transform-style-3d shadow-2xl flex flex-col justify-between border border-slate-700/80">
+                    
+                    <!-- Front Side -->
+                    <div id="flashcard-front" class="backface-hidden flex flex-col justify-between h-full space-y-4">
+                        <div class="flex justify-between items-center text-xs text-slate-400">
+                            <span id="fc-category" class="text-sky-400 font-semibold bg-sky-500/10 px-2.5 py-1 rounded-full border border-sky-500/20">
+                                Categoria
+                            </span>
+                            <span>Clique para revelar a resposta 🔄</span>
+                        </div>
+                        <div class="my-auto py-4">
+                            <p id="fc-question" class="text-base md:text-lg text-slate-100 font-medium text-center leading-relaxed">
+                                <!-- Question Statement -->
+                            </p>
+                        </div>
+                        <div class="text-center text-xs text-slate-500">
+                            Cartão <span id="fc-current-num">1</span> de 30
+                        </div>
+                    </div>
+
+                    <!-- Back Side -->
+                    <div id="flashcard-back" class="absolute inset-0 backface-hidden rotate-y-180 p-8 glass-card rounded-3xl bg-slate-900/95 flex flex-col justify-between space-y-4 border border-emerald-500/40">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-emerald-400 font-bold flex items-center gap-1">
+                                ✅ Resposta & Fundamento
+                            </span>
+                            <span class="text-slate-400">Clique para voltar 🔄</span>
+                        </div>
+                        <div class="overflow-y-auto max-h-[220px] pr-2 space-y-3 my-auto">
+                            <p id="fc-answer" class="text-sm font-semibold text-emerald-300 bg-emerald-950/40 p-3 rounded-xl border border-emerald-500/30">
+                                <!-- Correct Option -->
+                            </p>
+                            <p id="fc-explanation" class="text-xs text-slate-300 leading-relaxed">
+                                <!-- Explanation -->
+                            </p>
+                        </div>
+                        <div class="text-center text-xs text-slate-500">
+                            Psicologia Hospitalar - ENADE
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flashcard Navigation -->
+            <div class="flex justify-center items-center gap-4">
+                <button onclick="prevFlashcard()" class="px-4 py-2 rounded-xl text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+                    ⬅️ Anterior
+                </button>
+                <button onclick="randomFlashcard()" class="px-4 py-2 rounded-xl text-xs font-medium bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-600/50 transition">
+                    🎲 Aleatório
+                </button>
+                <button onclick="nextFlashcard()" class="px-4 py-2 rounded-xl text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+                    Próximo ➡️
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 3: GUIA TEÓRICO ==================== -->
+        <section id="tab-guide" class="hidden space-y-6">
+            <div class="glass-card p-6 rounded-2xl space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Guia de Referência Rápida 📖</h2>
+                        <p class="text-xs text-slate-400">Resumo conciso dos 30 conteúdos mais cobrados na prova final e no ENADE.</p>
+                    </div>
+                    <!-- Search Input -->
+                    <div class="relative min-w-[240px]">
+                        <input type="text" id="guide-search" oninput="filterGuide()" placeholder="Buscar por palavra-chave..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Guide Topics List -->
+            <div id="guide-topics-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Loaded dynamically -->
+            </div>
+        </section>
+
+        <!-- ==================== RESULT MODAL ==================== -->
+        <div id="result-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="glass-card max-w-lg w-full p-6 md:p-8 rounded-3xl text-center space-y-6 border border-sky-500/30 shadow-2xl relative animate-scaleUp">
+                
+                <div class="w-20 h-20 bg-gradient-to-tr from-emerald-500 to-sky-500 rounded-full flex items-center justify-center text-4xl mx-auto shadow-lg shadow-emerald-500/30">
+                    🏆
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="text-2xl font-bold text-white">Simulado Concluído!</h3>
+                    <p class="text-xs text-slate-400">Confira o seu desempenho nas 30 questões de Psicologia Hospitalar</p>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-3 gap-3 bg-slate-800/60 p-4 rounded-2xl border border-slate-700/60">
+                    <div>
+                        <span class="block text-xs text-slate-400">Acertos</span>
+                        <span id="res-score" class="text-2xl font-black text-emerald-400">0/30</span>
+                    </div>
+                    <div>
+                        <span class="block text-xs text-slate-400">Aproveitamento</span>
+                        <span id="res-percent" class="text-2xl font-black text-sky-400">0%</span>
+                    </div>
+                    <div>
+                        <span class="block text-xs text-slate-400">XP Ganho</span>
+                        <span id="res-xp" class="text-2xl font-black text-amber-400">+0</span>
+                    </div>
+                </div>
+
+                <!-- Evaluative Message -->
+                <div id="res-eval-box" class="p-4 rounded-xl text-xs leading-relaxed text-slate-300 bg-slate-800/40 border border-slate-700">
+                    <!-- Dynamic feedback message -->
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="closeResultModal(); switchTab('flashcards');" class="flex-1 py-3 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
+                        🎴 Revisar Flashcards
+                    </button>
+                    <button onclick="closeResultModal(); resetQuiz();" class="flex-1 py-3 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white shadow-lg shadow-sky-600/30 transition">
+                        🔄 Refazer Simulado
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="glass-card border-t border-slate-800/80 py-4 px-4 text-center text-xs text-slate-500">
+        <p>Desenvolvido para estudo da Avaliação Final (AVG) – Psicologia Hospitalar / Modelo ENADE</p>
+    </footer>
+
+    <!-- Canvas Confetti Library simulation -->
+    <canvas id="confetti-canvas" class="pointer-events-none fixed inset-0 z-50 w-full h-full"></canvas>
+
+    <script>
+
+        // Web Audio API Synthesizer for sound effects
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'correct') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
+                osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.2); // G5
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                osc.start(now);
+                osc.stop(now + 0.35);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now); // A3
+                osc.frequency.exponentialRampToValueAtTime(164.81, now + 0.2); // E3
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'levelUp') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.25);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+        }
+
+        // Complete 30 Questions Dataset covering all exam topics
+        const questionsData = [
+            {
+                id: 1,
+                category: "História e Modelos de Cuidado",
+                statement: "Durante uma aula de Psicologia Hospitalar, um professor apresenta a trajetória histórica da compreensão do processo saúde-doença. Inicialmente, predominava uma concepção na qual o corpo adoecido era compreendido prioritariamente como objeto de intervenção técnica. Com a ampliação do conceito de saúde e o desenvolvimento de perspectivas psicossociais, passou-se a considerar também a experiência subjetiva do adoecimento, as relações familiares, o contexto social e a própria instituição hospitalar. Considerando essa transformação, a inserção da Psicologia Hospitalar pode ser compreendida como:",
+                options: [
+                    "A) Uma substituição do conhecimento médico pelo conhecimento psicológico, fazendo da subjetividade o principal objeto de intervenção.",
+                    "B) Uma especialização restrita ao tratamento dos transtornos mentais identificados durante a hospitalização.",
+                    "C) Uma ampliação da compreensão do processo saúde-doença, incorporando a pessoa adoecida, sua subjetividade, relações e contexto institucional ao cuidado.",
+                    "D) Uma mudança essencialmente administrativa, decorrente da necessidade de organizar os serviços psicológicos nos hospitais.",
+                    "E) Uma modalidade de psicoterapia tradicional adaptada para ocorrer exclusivamente no leito hospitalar."
+                ],
+                correct: 2, // Index 2 -> C
+                explanation: "A inserção da Psicologia Hospitalar não busca substituir a Medicina nem se limita a psicopatologias. Ela representa uma ampliação do modelo biomédico para uma visão biopsicossocial integral, trazendo o sujeito e suas subjetividades para o centro do cuidado."
+            },
+            {
+                id: 2,
+                category: "Psicologia da Saúde vs. Hospitalar",
+                statement: "Uma psicóloga recém-formada afirma que Psicologia da Saúde e Psicologia Hospitalar são expressões equivalentes porque ambas trabalham com pessoas que apresentam problemas de saúde. Considerando a literatura da área, a afirmação apresenta uma inadequação conceitual porque:",
+                options: [
+                    "A) A Psicologia da Saúde constitui campo mais amplo, enquanto a Psicologia Hospitalar corresponde a uma área específica de atuação relacionada aos processos de adoecimento e hospitalização.",
+                    "B) A Psicologia Hospitalar atua exclusivamente com pacientes internados, enquanto a Psicologia da Saúde atua exclusivamente na atenção básica.",
+                    "C) A Psicologia da Saúde trabalha apenas com prevenção, enquanto a Psicologia Hospitalar trabalha somente com tratamento.",
+                    "D) A Psicologia Hospitalar pertence à Medicina, enquanto a Psicologia da Saúde pertence à Psicologia.",
+                    "E) A Psicologia da Saúde trabalha com indivíduos saudáveis, enquanto a Psicologia Hospitalar trabalha apenas com indivíduos doentes."
+                ],
+                correct: 0, // Index 0 -> A
+                explanation: "A Psicologia da Saúde é um campo macro voltado para políticas públicas, promoção e prevenção em diversos níveis. A Psicologia Hospitalar é uma especialidade focada no âmbito secundário e terciário de instituições de internação e saúde hospitalar."
+            },
+            {
+                id: 3,
+                category: "Despersonalização e Hospitalização",
+                statement: "Um paciente internado há 18 dias passa a referir-se a si próprio pelo número do leito, aceita passivamente decisões sobre seu corpo sem demonstrar compreensão das condutas. A equipe considera que ele está 'colaborativo', pois não questiona os procedimentos. A partir da compreensão psicológica da hospitalização, a conduta mais adequada do psicólogo seria:",
+                options: [
+                    "A) Reforçar a passividade do paciente para evitar conflitos com a equipe assistencial.",
+                    "B) Interpretar o comportamento exclusivamente como sinal de depressão e solicitar avaliação psiquiátrica imediata.",
+                    "C) Estimular o paciente a confrontar a equipe médica em todas as decisões para recuperar sua autonomia.",
+                    "D) Considerar que a perda da individualidade é um efeito inevitável e irresolvível da hospitalização.",
+                    "E) Compreender a experiência de despersonalização e favorecer espaços de escuta, participação, expressão subjetiva e preservação da singularidade do paciente."
+                ],
+                correct: 4, // Index 4 -> E
+                explanation: "A despersonalização hospitalar retira a singularidade e a cidadania do sujeito. O psicólogo atua para resgatar o sujeito de desejo e direito, acolhendo-o e promovendo espaços de autonomia sem reforçar a passividade."
+            },
+            {
+                id: 4,
+                category: "Compromisso Profissional e Limites",
+                statement: "Em uma enfermaria, uma paciente apresenta intensa ansiedade antes de uma cirurgia. O médico solicita que o psicólogo 'convença a paciente a aceitar o procedimento'. Durante a entrevista, entretanto, a psicóloga identifica que a paciente não compreendeu adequadamente os riscos e benefícios da cirurgia e manifesta medo de morrer. A intervenção psicologicamente mais consistente seria:",
+                options: [
+                    "A) Persuadir a paciente a aceitar a cirurgia, pois a equipe médica já definiu a conduta.",
+                    "B) Investigar os fatores psicológicos e comunicacionais envolvidos, favorecer a expressão das dúvidas e articular a paciente com a equipe responsável pelas informações clínicas.",
+                    "C) Recomendar o cancelamento definitivo da cirurgia até que a paciente não sinta mais nenhuma ansiedade.",
+                    "D) Explicar detalhadamente os riscos cirúrgicos médicos e orientar qual decisão a paciente deve tomar.",
+                    "E) Evitar qualquer intervenção para não interferir nas decisões da equipe médica."
+                ],
+                correct: 1, // Index 1 -> B
+                explanation: "O psicólogo não é agente de persuasão nem transmite dados cirúrgicos médicos. Ele facilita o canal de comunicação entre paciente e equipe médica e acolhe o medo e as dúvidas da paciente."
+            },
+            {
+                id: 5,
+                category: "Setting Hospitalar",
+                statement: "Um psicólogo realiza atendimento à beira do leito de uma paciente internada em enfermaria coletiva. Durante a entrevista, há ruídos, entrada e saída de profissionais e interrupções relacionadas aos procedimentos assistenciais. A situação evidencia que, na Psicologia Hospitalar:",
+                options: [
+                    "A) O atendimento psicológico perde seu caráter clínico quando realizado fora do consultório tradicional.",
+                    "B) O psicólogo deve reproduzir integralmente o setting tradicional de consultório, mesmo que isso inviabilize o atendimento.",
+                    "C) A intervenção deve ser suspensa sempre que não houver privacidade absoluta.",
+                    "D) O setting precisa ser compreendido de forma contextualizada, exigindo adaptação técnica sem abandono dos princípios éticos e psicológicos.",
+                    "E) O atendimento à beira do leito deve ser restrito ao repasse de informações objetivas."
+                ],
+                correct: 3, // Index 3 -> D
+                explanation: "O setting hospitalar é dinâmico, móvel e flexível. O psicólogo adapta as estratégias clínicas ao ambiente do leito/enfermaria sem descuidar do sigilo e do rigor ético."
+            },
+            {
+                id: 6,
+                category: "Avaliação Psicológica Hospitalar",
+                statement: "Uma mulher de 54 anos está internada para cirurgia e apresenta resistência ao procedimento. Relata medo de morrer, dificuldade para compreender informações médicas e experiência hospitalar anterior negativa. A equipe solicita 'um teste psicológico para descobrir por que ela está resistente'. A primeira decisão tecnicamente adequada é:",
+                options: [
+                    "A) Delimitar a demanda e investigar a situação por meio da integração de entrevista, observação, prontuário e informações da equipe, utilizando instrumento psicológico somente se houver indicação técnica.",
+                    "B) Aplicar imediatamente um teste padronizado de ansiedade para responder à equipe.",
+                    "C) Aplicar uma bateria completa de testes para identificar um diagnóstico psicopatológico prévio.",
+                    "D) Concluir prontamente que a resistência é decorrente de um transtorno de ansiedade grave.",
+                    "E) Solicitar à família que explique o comportamento da paciente antes de ter qualquer contato com ela."
+                ],
+                correct: 0, // Index 0 -> A
+                explanation: "A avaliação psicológica hospitalar começa pela delimitação da demanda via entrevista, observação e análise documental. Testes psicológicos são ferramentas complementares e só devem ser aplicados com indicação específica."
+            },
+            {
+                id: 7,
+                category: "Integração de Dados na Avaliação",
+                statement: "Durante uma avaliação psicológica, o profissional dispõe das seguintes informações: o paciente demonstra ansiedade; relata medo; apresenta compreensão insuficiente das orientações; a família fornece informações contraditórias; e a equipe percebe dificuldades de adesão. Qual procedimento melhor caracteriza uma avaliação psicológica qualificada?",
+                options: [
+                    "A) Escolher apenas a informação fornecida pela equipe, por ser considerada mais objetiva.",
+                    "B) Priorizar o resultado do teste psicológico caso tenha sido aplicado.",
+                    "C) Integrar criticamente as diferentes fontes de informação em relação à demanda que originou a avaliação.",
+                    "D) Desconsiderar os relatos familiares por não serem dados técnicos psicológicos.",
+                    "E) Registrar todas as informações sem estabelecer relações explicativas entre elas."
+                ],
+                correct: 2, // Index 2 -> C
+                explanation: "Uma avaliação de excelência articula e integra criticamente o relato do paciente, a percepção familiar, as observações da equipe e os aspectos do prontuário."
+            },
+            {
+                id: 8,
+                category: "Registros Éticos no Prontuário",
+                statement: "Após atendimento psicológico, uma profissional registra no prontuário multiprofissional toda a narrativa apresentada pelo paciente, incluindo conflitos conjugais, experiências traumáticas da infância e detalhes de sua vida sexual, embora nenhum desses elementos tenha relação com a assistência hospitalar. O principal problema desse registro é:",
+                options: [
+                    "A) O fato de o psicólogo utilizar linguagem técnica psicológica.",
+                    "B) A utilização do prontuário multiprofissional para registros da psicologia.",
+                    "C) O registro de impressões subjetivas do paciente.",
+                    "D) A realização de atendimento psicológico individual no hospital.",
+                    "E) A exposição desnecessária de conteúdos íntimos, sem pertinência para a finalidade assistencial e sem necessidade de compartilhamento."
+                ],
+                correct: 4, // Index 4 -> E
+                explanation: "O prontuário é um documento compartilhado por toda a equipe assistencial. Por ética e sigilo (Código de Ética do Psicólogo), devem ser registrados apenas os dados estritamente necessários e pertinentes ao cuidado da equipe."
+            },
+            {
+                id: 9,
+                category: "Evolução Psicológica vs. Laudo",
+                statement: "Em reunião de equipe, um profissional solicita à psicóloga 'o laudo psicológico' referente a todos os pacientes acompanhados pela Psicologia. A psicóloga explica que, em muitos casos, o documento existente é uma evolução psicológica registrada no prontuário. Essa distinção é importante porque:",
+                options: [
+                    "A) A evolução psicológica deve obrigatoriamente conter todos os resultados dos testes aplicados.",
+                    "B) A evolução registra sinteticamente o acompanhamento, intervenções e condutas pertinentes, enquanto o laudo decorre de processo de avaliação psicológica com finalidade específica.",
+                    "C) O laudo é utilizado exclusivamente em hospitais e a evolução exclusivamente em consultórios.",
+                    "D) Toda evolução psicológica constitui automaticamente um laudo técnico.",
+                    "E) A evolução é um documento exclusivamente administrativo, sem conteúdo técnico psicológico."
+                ],
+                correct: 1, // Index 1 -> B
+                explanation: "A evolução é o registro sintético e contínuo da assistência no prontuário. O laudo/relatório psicológico é um documento formal expedido após um processo deliberado e delimitado de avaliação psicológica."
+            },
+            {
+                id: 10,
+                category: "Setores Hospitalares e Especificidades",
+                statement: "Um hospital solicita à Psicologia que organize seu serviço considerando enfermarias, ambulatórios, pronto-socorro, UTI e internações. Uma compreensão adequada da atuação hospitalar permite afirmar que:",
+                options: [
+                    "A) A Psicologia Hospitalar deve concentrar-se exclusivamente nas enfermarias de longa permanência.",
+                    "B) O psicólogo deve atender apenas pacientes com encaminhamento médico explícito.",
+                    "C) A atuação deve ocorrer preferencialmente dentro de um consultório localizado no prédio hospitalar.",
+                    "D) Diferentes setores hospitalares apresentam demandas específicas, exigindo adaptação das estratégias psicológicas ao contexto, à gravidade clínica e ao momento do cuidado.",
+                    "E) UTI e emergência são espaços puramente biológicos e exclusivos da Medicina."
+                ],
+                correct: 3, // Index 3 -> D
+                explanation: "Cada setor (UTI, Pronto-Socorro, Oncologia, Pediatria) exige estratégias de intervenção específicas de acordo com o tempo, a gravidade clínica e o nível de estresse do ambiente."
+            },
+            {
+                id: 11,
+                category: "Urgência e Emergência",
+                statement: "Um adolescente chega ao pronto-socorro após tentativa de suicídio. Após os cuidados médicos iniciais, encontra-se emocionalmente desorganizado e a família apresenta intensa angústia. A equipe solicita intervenção psicológica. Na emergência, é adequado priorizar:",
+                options: [
+                    "A) Uma psicoterapia de longo prazo iniciada ainda no ambiente de pronto-socorro.",
+                    "B) A aplicação imediata de testes de personalidade para diagnosticar psicopatia.",
+                    "C) Uma investigação extensiva de toda a história de vida infantil do paciente.",
+                    "D) O diagnóstico definitivo antes de fornecer qualquer acolhimento.",
+                    "E) Uma intervenção breve, focal e contextualizada, voltada à crise, à avaliação da situação de risco, ao acolhimento e à articulação dos encaminhamentos necessários."
+                ],
+                correct: 4, // Index 4 -> E
+                explanation: "Na emergência/pronto-socorro, o tempo é exíguo e a crise é premente. A intervenção psicológica deve ser focal, objetiva, protetiva e visando à estabilização emocional e articulação da rede de cuidado."
+            },
+            {
+                id: 12,
+                category: "Atendimento Infantil na Emergência",
+                statement: "Uma criança de seis anos precisa realizar um procedimento invasivo no pronto-socorro e demonstra medo intenso e choro. Os pais também estão muito ansiosos. Nesse contexto, uma intervenção psicológica adequada envolve:",
+                options: [
+                    "A) Retirar imediatamente os pais do ambiente para evitar contaminação da ansiedade.",
+                    "B) Utilizar recursos compatíveis com o desenvolvimento infantil, favorecer a compreensão do procedimento, acolher a criança e orientar os pais, articulando a comunicação com a equipe.",
+                    "C) Convencer a criança de que o procedimento 'não dói nada' para acalmá-la.",
+                    "D) Impedir que a criança chore para que a ansiedade não aumente.",
+                    "E) Realizar um psicodiagnóstico completo de inteligência antes de autorizar o procedimento."
+                ],
+                correct: 1, // Index 1 -> B
+                explanation: "O atendimento infantil hospitalar recorre ao lúdico, historinhas e linguagem desenvolvimentista adequada, validando os sentimentos da criança e instrumentalizando a família para dar suporte."
+            },
+            {
+                id: 13,
+                category: "Cuidado Perinatal e Violência Obstétrica",
+                statement: "Uma puérpera relata que, durante o parto, não compreendeu os procedimentos realizados, sentiu-se intimidada pela equipe, teve suas dores desconsideradas e chora ao lembrar. A compreensão psicológica mais adequada considera que:",
+                options: [
+                    "A) O sofrimento decorre exclusivamente de uma predisposição prévia da mulher à ansiedade.",
+                    "B) A experiência deve ser encarada apenas como uma reação fisiológica natural do pós-parto.",
+                    "C) O psicólogo não deve abordar o parto para não gerar conflito com a equipe médica.",
+                    "D) Experiências de violência e perda de autonomia durante o parto podem produzir sofrimento psicológico e devem ser acolhidas considerando a história da mulher e o contexto da assistência.",
+                    "E) Toda experiência negativa no parto configura automaticamente um transtorno mental irreversível."
+                ],
+                correct: 3, // Index 3 -> D
+                explanation: "Experiências traumáticas no parto e violações da autonomia reprodutiva (violência obstétrica) geram sofrimento real e trauma que necessitam de escuta, validação e acolhimento singular."
+            },
+            {
+                id: 14,
+                category: "Avaliação Psicológica da Dor",
+                statement: "Um paciente com doença crônica refere dor intensa, mas os exames não demonstram alteração biológica proporcional à intensidade relatada. Parte da equipe conclui que 'a dor é psicológica / invenção'. A compreensão adequada da situação é:",
+                options: [
+                    "A) A dor deve ser considerada fenômeno multidimensional e subjetivo, não devendo sua intensidade ser invalidada pela ausência de correspondência simples com achados orgânicos.",
+                    "B) A ausência de alteração em exames comprova que a dor é fruto de imaginação deliberada.",
+                    "C) Somente o médico tem competência para validar a veracidade de uma dor.",
+                    "D) O psicólogo deve encontrar a causa física exata da dor que os médicos não acharam.",
+                    "E) Dores de origem psicológica não requerem nenhuma intervenção de cuidado."
+                ],
+                correct: 0, // Index 0 -> A
+                explanation: "A dor é uma experiência genuinamente subjetiva. A ausência de achados de exames não invalida o sofrimento do paciente nem autoriza rotulá-lo pejorativamente."
+            },
+            {
+                id: 15,
+                category: "Conceito de Dor Total",
+                statement: "Uma paciente oncológica em cuidados paliativos apresenta dor física, medo da evolução da doença, afastamento do trabalho, problemas financeiros, conflitos familiares e angústia sobre o sentido da vida. A situação é melhor compreendida pelo conceito de:",
+                options: [
+                    "A) Dor aguda nociceptiva pura.",
+                    "B) Somatização histérica.",
+                    "C) Dor total, compreendendo dimensões físicas, psicológicas, sociais e espirituais do sofrimento.",
+                    "D) Transtorno depressivo maior secundário inevitável.",
+                    "E) Reação emocional sem importância para o tratamento clínico."
+                ],
+                correct: 2, // Index 2 -> C
+                explanation: "Conceituado por Cicely Saunders, o termo 'Dor Total' reconhece que a dor do paciente grave é tecida pela soma das dimensões biológica, emocional, social e espiritual."
+            },
+            {
+                id: 16,
+                category: "Atuação na UTI",
+                statement: "Um paciente permanece sedado em UTI após quadro grave. Sua família demonstra intensa ansiedade e dificuldade para compreender os boletins médicos, evitando entrar no setor. A atuação psicológica nesse contexto deve:",
+                options: [
+                    "A) Restringir-se ao paciente internado, pois acompanhantes não são foco da hospitalização.",
+                    "B) Concentrar-se na avaliação psicopatológica dos parentes.",
+                    "C) Substituir o médico na entrega de boletins informativos.",
+                    "D) Considerar o trinômio paciente, família e equipe, favorecendo a comunicação, acolhimento e elaboração do sofrimento ligado à gravidade e incerteza.",
+                    "E) Proibir manifestações de choro dos familiares para manter a ordem no setor."
+                ],
+                correct: 3, // Index 3 -> D
+                explanation: "O trabalho em UTI aborda o trinômio Paciente-Família-Equipe. A família do paciente grave vivencia crise, incertezas e luto antecipatório, demandando suporte sustentado."
+            },
+            {
+                id: 17,
+                category: "Doação de Órgãos e Morte Encefálica",
+                statement: "Uma família é informada sobre a Morte Encefálica de um jovem e abordada sobre doação de órgãos. Os parentes choram intensamente e demonstram ambivalência. A contribuição da Psicologia nesse processo deve priorizar:",
+                options: [
+                    "A) Persuadir ativamente a família a assinar a autorização de doação.",
+                    "B) Acolher e compreender as dimensões subjetivas do luto, favorecendo uma abordagem cuidadosa e respeitosa, sem transformar o atendimento em convencimento.",
+                    "C) Convencer a família de que doar é a única atitude moralmente aceitável.",
+                    "D) Interromper a entrevista e afastar-se assim que houver choro.",
+                    "E) Aplicar uma bateria de testes psicodiagnósticos nos familiares antes de qualquer conversa."
+                ],
+                correct: 1, // Index 1 -> B
+                explanation: "O psicólogo acolhe o choque da Morte Encefálica e humaniza a comunicação. É estritamente vedado usar a intervenção psicológica para coagir ou persuadir a família a doar órgãos."
+            },
+            {
+                id: 18,
+                category: "Psico-oncologia",
+                statement: "Uma mulher recebe diagnóstico de câncer e passa a apresentar medo intenso, alterações na autoimagem e dificuldade para falar com os filhos. A equipe médica solicita à Psicologia que 'melhore a adesão'. A intervenção mais coerente com a Psico-Oncologia é:",
+                options: [
+                    "A) Pressionar a paciente para que mantenha um pensamento sempre otimista.",
+                    "B) Tratar de forma isolada os sintomas de ansiedade biológica.",
+                    "C) Evitar pronunciar a palavra 'câncer' para não gerar desespero.",
+                    "D) Compreender o impacto subjetivo do diagnóstico e tratamento, promovendo expressão emocional, enfrentamento (coping), comunicação familiar e diálogo com a equipe.",
+                    "E) Assumir o papel do médico ao explicar o prognóstico cirúrgico."
+                ],
+                correct: 3, // Index 3 -> D
+                explanation: "Na Psico-oncologia, o trabalho visa integrar as transformações no corpo, os medos de finitude, as mudanças no papel familiar e o fortalecimento dos mecanismos adaptativos de enfrentamento."
+            },
+            {
+                id: 19,
+                category: "Reinternações e Doenças Crônicas",
+                statement: "Um paciente crônico com frequentes reinternações é visto pela equipe como 'paciente difícil' porque questiona condutas e demonstra irritação. Ele afirma que 'sua vida gira em torno do hospital'. A intervenção mais consistente é:",
+                options: [
+                    "A) Investigar a experiência subjetiva das reinternações, as perdas de autonomia, os vínculos com a instituição e os recursos de enfrentamento disponíveis.",
+                    "B) Rotular a irritabilidade como simples traço de resistência intencional.",
+                    "C) Orientar a equipe a ignorar as queixas do paciente.",
+                    "D) Atribuir as reinternações exclusivamente à falta de adesão proposital do paciente.",
+                    "E) Encaminhar o paciente para psicoterapia externa e cancelar o acompanhamento hospitalar."
+                ],
+                correct: 0, // Index 0 -> A
+                explanation: "O rótulo de 'paciente difícil' costuma esconder sofrimento crônico, perda da autonomia e desgaste com o processo de adoecimento. Cabe à Psicologia escutar o sentido desse comportamento."
+            },
+            {
+                id: 20,
+                category: "Risco de Suicídio e Sigilo Ético",
+                statement: "Atendida no pronto-socorro após tentativa de suicídio, uma paciente afirma que tentará novamente se tiver oportunidade. A família pede ao psicólogo para não contar nada à equipe com medo de estigmatização. A prioridade ética é:",
+                options: [
+                    "A) Manter o segredo absoluto sem informar a equipe para não quebrar a confiança da paciente.",
+                    "B) Suspender o atendimento até que a família concorde com o compartilhamento.",
+                    "C) Avaliar o risco, atuar de forma articulada com a equipe e compartilhar as informações necessárias à proteção da vida e continuidade do cuidado, respeitando os limites éticos da confidencialidade.",
+                    "D) Publicar os detalhes íntimos do histórico da paciente no grupo da equipe.",
+                    "E) Dar alta psicológica e sugerir que ela procure um posto de saúde na próxima semana."
+                ],
+                correct: 2, // Index 2 -> C
+                explanation: "Em casos de iminente risco de vida (como ideação suicida estruturada), a quebra confidencial responsável é respaldada pelo Código de Ética, informando à equipe estritamente o necessário para proteger o paciente."
+            },
+            {
+                id: 21,
+                category: "Comunicação de Notícias Difíceis",
+                statement: "Durante a comunicação de agravamento irreversível, os familiares choram e não conseguem fazer perguntas. O médico demonstra desconforto e acelera os termos técnicos. A atuação psicológica adequada é:",
+                options: [
+                    "A) Retirar os parentes da sala para o médico terminar logo o comunicado.",
+                    "B) Favorecer condições para uma comunicação clara, gradual e sensível, acolhendo as emoções e auxiliando a equipe sem tomar a responsabilidade médica de informar o diagnóstico.",
+                    "C) Adiantar o diagnóstico e a data provável do óbito no lugar do médico.",
+                    "D) Ocultar a gravidade da doença para que a família não sofra.",
+                    "E) Mandar os familiares pararem de chorar para prestarem atenção na técnica."
+                ],
+                correct: 1, // Index 1 -> B
+                explanation: "O psicólogo atua como mediador da comunicação de notícias difíceis, preparando o campo emocional, contendo o impacto e ajudando a equipe a traduzir o jargão técnico em acolhimento."
+            },
+            {
+                id: 22,
+                category: "Cuidados Paliativos",
+                statement: "Diante de um paciente com doença progressiva sem possibilidade de cura, um colega afirma: 'Como não há mais cura, a Psicologia deve apenas ajudar o paciente a aceitar a morte'. A afirmação é inadequada porque:",
+                options: [
+                    "A) O objetivo principal dos cuidados paliativos é prolongar a vida a qualquer custo.",
+                    "B) O atendimento psicológico deve focar apenas na família e ignorar o paciente.",
+                    "C) A Psicologia deve conseguir eliminar 100% de todo e qualquer sofrimento do paciente.",
+                    "D) Cuidados paliativos deslocam o foco da cura para a qualidade de vida e cuidado integral, englobando aspectos psicológicos, sociais, familiares e de finitude.",
+                    "E) Pacientes paliativos não possuem indicação para atendimento psicológico."
+                ],
+                correct: 3, // Index 3 -> D
+                explanation: "Paliar não é 'não fazer mais nada', mas sim mudar o foco da cura biológica para a máxima qualidade de vida, alívio da dor e suporte bio-psico-socio-espiritual até o fim."
+            },
+            {
+                id: 23,
+                category: "Cuidadores Familiares e Sobrecarga",
+                statement: "Uma filha afasta-se do trabalho para acompanhar a mãe internada por meses. Relata exaustão, culpa por sentir raiva e medo de abandonar a mãe. A intervenção psicológica deve considerar que:",
+                options: [
+                    "A) A cuidadora deve manter-se disponível 24h para provar seu amor filial.",
+                    "B) Sentimentos de irritação indicam ausência de vínculo afetivo autêntico.",
+                    "C) O psicólogo deve focar exclusivamente na mãe que está no leito.",
+                    "D) A cuidadora necessita apenas de técnicas simples de respiração.",
+                    "E) O cuidador também é afetado pelo adoecimento, vivenciando sobrecarga e perdas, sendo legítimo e essencial incluí-lo no cuidado psicológico."
+                ],
+                correct: 4, // Index 4 -> E
+                explanation: "O cuidador principal é a 'segunda vítima' do adoecimento crônico/grave. Ele sofre síndrome de sobrecarga (Burnout do cuidador) e precisa de acolhimento e suporte na rede de cuidado."
+            },
+            {
+                id: 24,
+                category: "Bioética: Distanásia, Ortotanásia, Eutanásia",
+                statement: "Um paciente em fase terminal irreversível continua submetido a sucessivos procedimentos invasivos e dolorosos que não trazem cura, visando apenas prolongar a atividade cardíaca a custo de intenso sofrimento. Essa situação caracteriza:",
+                options: [
+                    "A) Distanásia, relacionada ao prolongamento obstinado e desproporcional do processo de morrer (futilidade terapêutica).",
+                    "B) Eutanásia, pois tratamentos médicos configuram antecipação deliberada da morte.",
+                    "C) Ortotanásia, visto que todo procedimento invasivo promove a morte no tempo natural.",
+                    "D) Luto antecipatório em estágio avançado.",
+                    "E) Cuidados paliativos de excelência centrados no conforto do doente."
+                ],
+                correct: 0, // Index 0 -> A
+                explanation: "Distanásia é a obstinação terapêutica fútil que adia a morte biológica aumentando o sofrimento. A Ortotanásia é o processo natural e digno de morrer, e a Eutanásia é a abreviação intencional da vida."
+            },
+            {
+                id: 25,
+                category: "Processo de Luto Hospitalar",
+                statement: "Após o falecimento súbito do marido, a esposa entra em estado de choque, alternando choro e negação ('ele vai voltar'). Um profissional exige que ela 'aceite a verdade imediatamente'. A intervenção psicológica correta é:",
+                options: [
+                    "A) Acolher a reação inicial, compreendendo que o luto não é um processo linear e oferecendo escuta e espaço para assimilação gradativa da perda.",
+                    "B) Confrontar duramente a negação apresentada pela esposa no mesmo instante.",
+                    "C) Proibir que ela veja o corpo para não piorar o trauma.",
+                    "D) Obrigar a viúva a recitar as 5 fases do luto para saber em qual se encontra.",
+                    "E) Fazer prescrição de psicotrópicos e internação psiquiátrica imediata."
+                ],
+                correct: 0, // Index 0 -> A
+                explanation: "O luto é fluido, singular e não-linear. O choque e a negação temporária são defesas psíquicas iniciais necessárias que devem ser acolhidas com empatia e respeito ao tempo do sujeito."
+            },
+            {
+                id: 26,
+                category: "Pessoas Privadas de Liberdade (PPL)",
+                statement: "Um paciente sob custódia prisional é internado. Membros da equipe usam termos pejorativos e recusam-se a ouvi-lo, alegando que 'por ser preso não tem direito a escolha'. A atitude do psicólogo deve ser:",
+                options: [
+                    "A) Concordar com a equipe e priorizar exclusivamente a contenção de segurança.",
+                    "B) Reconhecer que a privação de liberdade não extingue o direito ao cuidado em saúde digno e humanizado, intervindo contra estigmas e barreiras de poder.",
+                    "C) Recusar-se a atender o paciente para não se envolver em questões da justiça.",
+                    "D) Tratar o paciente exclusivamente como objeto de periculosidade criminal.",
+                    "E) Deixar que os agentes penitenciários decidam o que o paciente pode ou não falar."
+                ],
+                correct: 1, // Index 1 -> B
+                explanation: "O SUS pauta-se pela universalidade e equidade. A condição judicial de privação de liberdade não anula os direitos fundamentais à saúde, humanização e dignidade do sujeito."
+            },
+            {
+                id: 27,
+                category: "Catástrofes e Emergências Coletivas",
+                statement: "Após uma enchente avassaladora, o hospital recebe dezenas de feridos e famílias em desespero por desaparecidos. Na Psicologia dos Desastres, a intervenção inicial deve:",
+                options: [
+                    "A) Oferecer psicanálise de longa duração no meio do pátio de triagem.",
+                    "B) Aplicar testes de personalidade em toda a população atingida.",
+                    "C) Atender somente quem já possuía diagnóstico prévio de transtorno mental.",
+                    "D) Atuar na perspectiva psicossocial coletiva, oferecendo Primeiros Socorros Psicológicos (PSP), acolhimento de crise, organização de informações e suporte às necessidades básicas.",
+                    "E) Esperar 6 meses até que a emergência passe para começar qualquer suporte."
+                ],
+                correct: 3, // Index 3 -> D
+                explanation: "Em desastres e calamidades, a atuação baseia-se nos Primeiros Socorros Psicológicos (PSP): acolhimento, estabilização, facilitação de informações, unificação de famílias e suporte psicossocial focado no presente."
+            },
+            {
+                id: 28,
+                category: "Racismo e Preconceito Institucional",
+                statement: "Uma paciente negra relata que suas queixas de dor grave foram ignoradas pela equipe, enquanto acompanhantes brancos foram prontamente atendidos. A equipe afirma que ela 'está dramatizando'. A atuação do psicólogo deve:",
+                options: [
+                    "A) Tratar o caso como simples problema individual de baixa auto-estima da paciente.",
+                    "B) Compreender que o racismo estrutural e institucional atravessa as práticas de saúde, analisando criticamente as assimetrias de cuidado e atuações discriminatórias na instituição.",
+                    "C) Aconselhar a paciente a não incomodar os médicos para não ser mal vista.",
+                    "D) Considerar a queixa como um mero mal-entendido interpessoal insignificante.",
+                    "E) Ocultar o debate racial para manter uma suposta neutralidade ética."
+                ],
+                correct: 1, // Index 1 -> B
+                explanation: "O racismo institucional impacta diretamente a qualidade e a agilidade da assistência à saúde (por exemplo, a dor de pessoas negras historicamente subestimada). O psicólogo deve ter leitura crítica dos marcadores sociais."
+            },
+            {
+                id: 29,
+                category: "Esgotamento da Equipe e Autocuidado",
+                statement: "Uma psicóloga hospitalar apresenta sinais acentuados de exaustão, frieza emocional defensiva e insônia devido ao contato frequente com a morte, mas insiste que 'deve suportar tudo sozinha por ser a profissional'. A análise adequada indica que:",
+                options: [
+                    "A) O autocuidado, a supervisão clínica e a psicoterapia pessoal são compromissos ético-profissionais vitais para sustentar o trabalho com a dor e evitar o Burnout.",
+                    "B) O esgotamento demonstra que ela não tem vocação nenhuma para ser psicóloga.",
+                    "C) O profissional de psicologia é imune ao sofrimento psíquico decorrente do trabalho.",
+                    "D) Ela deve parar de se importar com os pacientes e atender de forma puramente mecânica.",
+                    "E) A única saída viável é o abandono imediato e definitivo da profissão."
+                ],
+                correct: 0, // Index 0 -> A
+                explanation: "A exposição contínua ao sofrimento grave e à finitude exige que o psicólogo cuide da própria saúde mental através de análise/terapia pessoal, supervisão técnica e estratégias de autocuidado."
+            },
+            {
+                id: 30,
+                category: "Interdisciplinaridade no Cuidado Integral",
+                statement: "Numa reunião multiprofissional, médica, enfermagem, serviço social e psicologia apresentam dados do mesmo paciente com divergências de conduta. O princípio da Interdisciplinaridade propõe como atuação ideal:",
+                options: [
+                    "A) Que cada profissional execute seu plano de forma isolada sem conversar com os outros.",
+                    "B) Que o psicólogo tome todas as decisões finais por entender a subjetividade.",
+                    "C) A construção de uma compreensão compartilhada do caso, articulando os saberes de cada área para elaborar um plano terapêutico singular e integrado.",
+                    "D) A submissão cega de todos os profissionais à decisão isolada do médico.",
+                    "E) O agrupamento mecânico de papéis num relatório único sem qualquer debate."
+                ],
+                correct: 2, // Index 2 -> C
+                explanation: "A interdisciplinaridade vai além da mera soma de especialistas (multidisciplinaridade); ela pressupõe o diálogo, a intersecção de saberes e o planejamento conjunto do cuidado integral ao paciente."
+            }
+        ];
+
+
+        // App State
+        let currentQuestionIdx = 0;
+        let userScore = 0;
+        let streak = 0;
+        let userXP = 0;
+        let answeredQuestions = new Array(questionsData.length).fill(null); // stores user choice indices
+        let flashcardIdx = 0;
+        let isFlashcardFlipped = false;
+
+        // Initialize on DOM load
+        window.onload = function() {
+            renderQuestion();
+            renderFlashcard();
+            renderGuide();
+            updateHUD();
+        };
+
+        // Tab Switching
+        function switchTab(tab) {
+            document.getElementById('tab-quiz').classList.add('hidden');
+            document.getElementById('tab-flashcards').classList.add('hidden');
+            document.getElementById('tab-guide').classList.add('hidden');
+
+            document.getElementById('btn-quiz').className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-200";
+            document.getElementById('btn-flashcards').className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-200";
+            document.getElementById('btn-guide').className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-200";
+
+            if (tab === 'quiz') {
+                document.getElementById('tab-quiz').classList.remove('hidden');
+                document.getElementById('btn-quiz').className = "px-3 py-1.5 rounded-lg transition-all duration-200 bg-sky-600 text-white shadow-sm";
+            } else if (tab === 'flashcards') {
+                document.getElementById('tab-flashcards').classList.remove('hidden');
+                document.getElementById('btn-flashcards').className = "px-3 py-1.5 rounded-lg transition-all duration-200 bg-sky-600 text-white shadow-sm";
+            } else if (tab === 'guide') {
+                document.getElementById('tab-guide').classList.remove('hidden');
+                document.getElementById('btn-guide').className = "px-3 py-1.5 rounded-lg transition-all duration-200 bg-sky-600 text-white shadow-sm";
+            }
+        }
+
+        // Render Current Quiz Question
+        function renderQuestion() {
+            const q = questionsData[currentQuestionIdx];
+            
+            // Header texts
+            document.getElementById('question-number-text').innerText = `Questão ${currentQuestionIdx + 1} de ${questionsData.length}`;
+            document.getElementById('question-category-tag').innerText = q.category;
+            
+            // Progress bar
+            const percent = ((currentQuestionIdx + 1) / questionsData.length) * 100;
+            document.getElementById('quiz-progress-bar').style.width = `${percent}%`;
+
+            // Statement
+            document.getElementById('question-statement').innerText = q.statement;
+
+            // Options
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            const userChoice = answeredQuestions[currentQuestionIdx];
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-start gap-3 text-sm leading-relaxed ";
+                
+                if (userChoice === null) {
+                    btn.className += "bg-slate-800/60 border-slate-700/70 hover:bg-slate-700/80 hover:border-sky-500/50 text-slate-200";
+                    btn.onclick = () => selectOption(idx);
+                } else {
+                    // Question was already answered
+                    btn.disabled = true;
+                    if (idx === q.correct) {
+                        btn.className += "bg-emerald-950/60 border-emerald-500 text-emerald-200 font-medium";
+                    } else if (idx === userChoice && userChoice !== q.correct) {
+                        btn.className += "bg-rose-950/60 border-rose-500 text-rose-200";
+                    } else {
+                        btn.className += "bg-slate-800/30 border-slate-800 text-slate-500 opacity-60";
+                    }
+                }
+
+                btn.innerHTML = `
+                    <span class="w-6 h-6 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">${String.fromCharCode(65 + idx)}</span>
+                    <span class="flex-1">${opt.substring(3)}</span>
+                `;
+
+                container.appendChild(btn);
+            });
+
+            // Feedback Box
+            const feedbackBox = document.getElementById('feedback-box');
+            if (userChoice !== null) {
+                feedbackBox.classList.remove('hidden');
+                if (userChoice === q.correct) {
+                    feedbackBox.className = "p-5 rounded-xl border bg-emerald-950/40 border-emerald-500/40 text-emerald-200 animate-fadeIn";
+                    document.getElementById('feedback-title').innerHTML = "<span>✅ Resposta Correta! (+100 XP)</span>";
+                } else {
+                    feedbackBox.className = "p-5 rounded-xl border bg-rose-950/40 border-rose-500/40 text-rose-200 animate-fadeIn";
+                    document.getElementById('feedback-title').innerHTML = "<span>❌ Resposta Incorreta</span>";
+                }
+                document.getElementById('feedback-text').innerHTML = `<strong>Justificativa Técnica:</strong> ${q.explanation}`;
+            } else {
+                feedbackBox.classList.add('hidden');
+            }
+
+            // Buttons state
+            document.getElementById('btn-prev').disabled = (currentQuestionIdx === 0);
+            
+            const nextLabel = document.getElementById('btn-next-label');
+            if (currentQuestionIdx === questionsData.length - 1) {
+                nextLabel.innerText = "Finalizar e Ver Resultado";
+            } else {
+                nextLabel.innerText = "Próxima";
+            }
+        }
+
+        // Option Selection Logic
+        function selectOption(optIdx) {
+            if (answeredQuestions[currentQuestionIdx] !== null) return; // Prevent re-answering
+
+            const q = questionsData[currentQuestionIdx];
+            answeredQuestions[currentQuestionIdx] = optIdx;
+
+            if (optIdx === q.correct) {
+                userScore++;
+                streak++;
+                userXP += 100 + (streak * 10);
+                playSound('correct');
+            } else {
+                streak = 0;
+                playSound('wrong');
+            }
+
+            updateHUD();
+            renderQuestion();
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIdx < questionsData.length - 1) {
+                currentQuestionIdx++;
+                renderQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIdx > 0) {
+                currentQuestionIdx--;
+                renderQuestion();
+            }
+        }
+
+        function resetQuiz() {
+            currentQuestionIdx = 0;
+            userScore = 0;
+            streak = 0;
+            answeredQuestions = new Array(questionsData.length).fill(null);
+            updateHUD();
+            renderQuestion();
+        }
+
+        function updateHUD() {
+            document.getElementById('user-xp').innerText = `${userXP} XP`;
+            document.getElementById('streak-count').innerText = `${streak}x`;
+
+            const level = Math.floor(userXP / 400) + 1;
+            document.getElementById('user-level').innerText = `Nível ${level}`;
+        }
+
+        // Finish Quiz Modal
+        function finishQuiz() {
+            const percent = Math.round((userScore / questionsData.length) * 100);
+            document.getElementById('res-score').innerText = `${userScore}/30`;
+            document.getElementById('res-percent').innerText = `${percent}%`;
+            document.getElementById('res-xp').innerText = `+${userXP}`;
+
+            const evalBox = document.getElementById('res-eval-box');
+            if (percent >= 80) {
+                evalBox.innerText = "🌟 Desempenho Excepcional! Você domina os conceitos teóricos e éticos do modelo ENADE de Psicologia Hospitalar. Pronto para a prova final!";
+                playSound('levelUp');
+                triggerConfetti();
+            } else if (percent >= 60) {
+                evalBox.innerText = "👍 Bom desempenho! Você possui uma sólida base nos conteúdos hospitalares. Recomendamos revisar os temas onde errou nos Flashcards.";
+            } else {
+                evalBox.innerText = "📚 Estudo necessário! Aproveite o nosso Guia Teórico e os Flashcards para reforçar os pontos chave sobre bioética, UTI, emergência e avaliação.";
+            }
+
+            document.getElementById('result-modal').classList.remove('hidden');
+        }
+
+        function closeResultModal() {
+            document.getElementById('result-modal').classList.add('hidden');
+        }
+
+        // FLASHCARDS MODULE LOGIC
+        function renderFlashcard() {
+            const q = questionsData[flashcardIdx];
+            document.getElementById('fc-category').innerText = q.category;
+            document.getElementById('fc-question').innerText = q.statement;
+            document.getElementById('fc-current-num').innerText = flashcardIdx + 1;
+
+            document.getElementById('fc-answer').innerText = q.options[q.correct];
+            document.getElementById('fc-explanation').innerText = q.explanation;
+
+            // Reset rotation if flipped
+            if (isFlashcardFlipped) {
+                flipFlashcard();
+            }
+        }
+
+        function flipFlashcard() {
+            const inner = document.getElementById('flashcard-inner');
+            isFlashcardFlipped = !isFlashcardFlipped;
+            if (isFlashcardFlipped) {
+                inner.classList.add('rotate-y-180');
+            } else {
+                inner.classList.remove('rotate-y-180');
+            }
+        }
+
+        function nextFlashcard() {
+            flashcardIdx = (flashcardIdx + 1) % questionsData.length;
+            renderFlashcard();
+        }
+
+        function prevFlashcard() {
+            flashcardIdx = (flashcardIdx - 1 + questionsData.length) % questionsData.length;
+            renderFlashcard();
+        }
+
+        function randomFlashcard() {
+            flashcardIdx = Math.floor(Math.random() * questionsData.length);
+            renderFlashcard();
+        }
+
+        // THEORETICAL GUIDE LOGIC
+        function renderGuide() {
+            const grid = document.getElementById('guide-topics-grid');
+            grid.innerHTML = '';
+
+            questionsData.forEach(q => {
+                const card = document.createElement('div');
+                card.className = "guide-card glass-card p-5 rounded-2xl border border-slate-800 space-y-2 hover:border-sky-500/40 transition";
+                card.dataset.text = (q.category + " " + q.statement + " " + q.explanation).toLowerCase();
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-center text-xs text-sky-400 font-semibold mb-1">
+                        <span>Questão ${q.id} • ${q.category}</span>
+                    </div>
+                    <p class="text-xs font-semibold text-slate-200">${q.options[q.correct]}</p>
+                    <p class="text-xs text-slate-400 leading-relaxed">${q.explanation}</p>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function filterGuide() {
+            const term = document.getElementById('guide-search').value.toLowerCase();
+            const cards = document.querySelectorAll('.guide-card');
+
+            cards.forEach(card => {
+                if (card.dataset.text.includes(term)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // CONFETTI ANIMATION
+        function triggerConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const pieces = [];
+            const numberOfPieces = 100;
+            const colors = ['#0284c7', '#38bdf8', '#10b981', '#f59e0b', '#ec4899'];
+
+            for (let i = 0; i < numberOfPieces; i++) {
+                pieces.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    speed: Math.random() * 5 + 2,
+                    angle: Math.random() * 360
+                });
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                pieces.forEach(p => {
+                    ctx.save();
+                    ctx.fillStyle = p.color;
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.angle);
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.restore();
+
+                    p.y += p.speed;
+                    p.angle += 0.05;
+
+                    if (p.y > canvas.height) p.y = -10;
+                });
+
+                if (document.getElementById('result-modal').classList.contains('hidden') === false) {
+                    requestAnimationFrame(draw);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+
+            draw();
+        }
+    </script>
+</body>
+</html>
